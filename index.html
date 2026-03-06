@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Growth Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --bg:#070b14;
+      --bg2:#0d1324;
+      --card:rgba(20,26,44,0.82);
+      --line:rgba(0,255,170,0.18);
+      --text:#eaf2ff;
+      --muted:#9fb0d1;
+      --accent:#00f5a0;
+      --accent2:#00c2ff;
+      --danger:#ff5d7a;
+      --glow:0 0 25px rgba(0,245,160,0.15), 0 0 80px rgba(0,194,255,0.08);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      font-family:Inter, Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(0,194,255,0.14), transparent 28%),
+        radial-gradient(circle at top right, rgba(0,245,160,0.10), transparent 25%),
+        linear-gradient(135deg, var(--bg), #08111d 45%, #060913);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      position:relative;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:24px;
+    }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    body::before{
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size:40px 40px;
+      mask-image:linear-gradient(to bottom, rgba(255,255,255,0.75), transparent);
+    }
+
+    body::after{
+      background:
+        radial-gradient(circle at 20% 25%, rgba(0,245,160,0.10), transparent 12%),
+        radial-gradient(circle at 75% 15%, rgba(0,194,255,0.10), transparent 14%),
+        radial-gradient(circle at 65% 80%, rgba(0,245,160,0.07), transparent 12%);
+      animation:floatGlow 10s linear infinite alternate;
+    }
+
+    @keyframes floatGlow{
+      from{transform:translateY(0px) scale(1);}
+      to{transform:translateY(-12px) scale(1.02);}
+    }
+
+    .app{
+      position:relative;
+      z-index:1;
+      width:min(1100px, 100%);
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:20px;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:22px;
+      box-shadow:var(--glow);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+
+    .left{
+      padding:22px;
+    }
+
+    .right{
+      padding:20px;
+      min-height:680px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.05);
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:0.5px;
+      margin-bottom:14px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size:32px;
+      line-height:1.05;
+      letter-spacing:-0.5px;
+    }
+
+    .sub{
+      color:var(--muted);
+      margin:0 0 18px;
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:8px;
+      font-size:13px;
+      color:#c8d6f5;
+      font-weight:600;
+    }
+
+    .field input{
+      width:100%;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      outline:none;
+      background:rgba(6,12,22,0.85);
+      color:var(--text);
+      font-size:15px;
+      transition:0.25s ease;
+      box-shadow:inset 0 0 0 1px transparent;
+    }
+
+    .field input:focus{
+      border-color:rgba(0,245,160,0.35);
+      box-shadow:0 0 0 4px rgba(0,245,160,0.08);
+      transform:translateY(-1px);
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:6px;
+    }
+
+    button{
+      border:none;
+      border-radius:14px;
+      padding:13px 14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.25s ease;
+      color:white;
+      background:linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow:0 10px 24px rgba(0,194,255,0.16);
+    }
+
+    button:hover{
+      transform:translateY(-2px);
+      filter:brightness(1.05);
+    }
+
+    button.secondary{
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow:none;
+    }
+
+    button.secondary:hover{
+      background:rgba(255,255,255,0.08);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+    }
+
+    .stat{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.06);
+    }
+
+    .stat .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .stat .value{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.2;
+      word-break:break-word;
+    }
+
+    .chartWrap{
+      position:relative;
+      flex:1;
+      min-height:340px;
+      padding:14px;
+      border-radius:20px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.06);
+    }
+
+    .historyBox{
+      max-height:220px;
+      overflow:auto;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.06);
+      font-size:13px;
+      line-height:1.7;
+      color:#d9e6ff;
+    }
+
+    .historyItem{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+
+    .historyItem:last-child{
+      border-bottom:none;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .shareLink{
+      width:100%;
+      margin-top:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.04);
+      border:1px dashed rgba(0,245,160,0.25);
+      color:#c8ffe9;
+      font-size:12px;
+      word-break:break-all;
+      display:none;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .error{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,93,122,0.08);
+      border:1px solid rgba(255,93,122,0.20);
+      color:#ffd0d9;
+      font-size:13px;
+      display:none;
+    }
+
+    .footerNote{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+      opacity:0.9;
+    }
+
+    @media (max-width: 980px){
+      .app{
+        grid-template-columns:1fr;
+      }
+      .right{
+        min-height:auto;
+      }
+    }
+
+    @media (max-width: 640px){
+      body{
+        padding:14px;
+      }
+      .left,.right{
+        padding:16px;
+      }
+      h1{
+        font-size:26px;
+      }
+      .stats{
+        grid-template-columns:1fr;
+      }
+      .actions{
+        grid-template-columns:1fr;
+      }
+      .chartWrap{
+        min-height:280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel left">
+      <div class="badge">🚀 Single-file • GitHub Pages Ready</div>
+      <h1>Portfolio Growth Simulator</h1>
+      <p class="sub">
+        Simulate daily compounding like a proper market nerd. Clean, dark, futuristic, and actually shareable without weird browser hacks.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="investment">Initial Investment (₹)</label>
+          <input id="investment" type="number" min="0" step="0.01" placeholder="10000" value="10000">
+        </div>
+
+        <div class="field">
+          <label for="profit">Daily Profit / Growth (%)</label>
+          <input id="profit" type="number" step="0.0001" placeholder="1.2" value="1.2">
+        </div>
+
+        <div class="field">
+          <label for="days">Number of Days</label>
+          <input id="days" type="number" min="1" step="1" placeholder="30" value="30">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="simulateBtn">Simulate</button>
+        <button class="secondary" id="resetBtn">Reset</button>
+        <button class="secondary" id="jsonBtn">Export JSON</button>
+        <button class="secondary" id="csvBtn">Export CSV</button>
+        <button class="secondary" id="shareBtn" style="grid-column:1/-1;">Share Simulation</button>
+      </div>
+
+      <div class="shareLink" id="shareLink"></div>
+      <div class="error" id="errorBox"></div>
+
+      <div class="footerNote">
+        Built in one file. No backend. No drama.
+      </div>
+    </section>
+
+    <section class="panel right">
+      <div class="topbar">
+        <div>
+          <div class="muted">Simulation Summary</div>
+        </div>
+        <div class="muted" id="runInfo">Ready</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Final Value</div>
+          <div class="value" id="finalValue">₹0.00</div>
+        </div>
+        <div class="stat">
+          <div class="label">Total Profit</div>
+          <div class="value" id="totalProfit">₹0.00</div>
+        </div>
+        <div class="stat">
+          <div class="label">Growth Multiple</div>
+          <div class="value" id="growthMultiple">0.00x</div>
+        </div>
+      </div>
+
+      <div class="chartWrap">
+        <canvas id="chart"></canvas>
+      </div>
+
+      <div class="historyBox" id="result">
+        Run a simulation and your daily growth timeline will appear here.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const investmentInput = document.getElementById("investment");
+    const profitInput = document.getElementById("profit");
+    const daysInput = document.getElementById("days");
+
+    const resultBox = document.getElementById("result");
+    const finalValueEl = document.getElementById("finalValue");
+    const totalProfitEl = document.getElementById("totalProfit");
+    const growthMultipleEl = document.getElementById("growthMultiple");
+    const shareLinkEl = document.getElementById("shareLink");
+    const errorBox = document.getElementById("errorBox");
+    const runInfo = document.getElementById("runInfo");
+
+    const simulateBtn = document.getElementById("simulateBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const jsonBtn = document.getElementById("jsonBtn");
+    const csvBtn = document.getElementById("csvBtn");
+    const shareBtn = document.getElementById("shareBtn");
+
+    let chart = null;
+    let history = [];
+
+    function formatCurrency(num){
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+
+    function showError(message){
+      errorBox.style.display = "block";
+      errorBox.textContent = message;
+    }
+
+    function hideError(){
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+    }
+
+    function getInputs(){
+      const investment = parseFloat(investmentInput.value);
+      const profit = parseFloat(profitInput.value);
+      const days = parseInt(daysInput.value, 10);
+      return { investment, profit, days };
+    }
+
+    function validateInputs({ investment, profit, days }){
+      if (Number.isNaN(investment) || Number.isNaN(profit) || Number.isNaN(days)) {
+        return "Please fill all fields with valid numbers.";
+      }
+      if (investment < 0) {
+        return "Initial investment cannot be negative.";
+      }
+      if (days <= 0) {
+        return "Days must be at least 1.";
+      }
+      if (days > 5000) {
+        return "Days are too high. Keep it under 5000 or the browser may start questioning your life choices.";
+      }
+      if (profit < -100) {
+        return "Daily growth cannot be less than -100%.";
+      }
+      return "";
+    }
+
+    function simulate(){
+      hideError();
+
+      const inputs = getInputs();
+      const validationError = validateInputs(inputs);
+
+      if (validationError) {
+        showError(validationError);
+        return;
+      }
+
+      const { investment, profit, days } = inputs;
+      const dailyRate = profit / 100;
+
+      let value = investment;
+      const labels = [];
+      const data = [];
+      history = [];
+
+      for (let i = 1; i <= days; i++) {
+        value = value * (1 + dailyRate);
+        labels.push("Day " + i);
+        data.push(Number(value.toFixed(2)));
+        history.push({
+          day: i,
+          value: Number(value.toFixed(2))
+        });
+      }
+
+      renderSummary(investment, value, days, profit);
+      renderHistory();
+      drawChart(labels, data);
+    }
+
+    function renderSummary(initial, finalValue, days, dailyPercent){
+      const totalProfit = finalValue - initial;
+      const multiple = initial === 0 ? 0 : finalValue / initial;
+
+      finalValueEl.textContent = formatCurrency(finalValue);
+      totalProfitEl.textContent = formatCurrency(totalProfit);
+      growthMultipleEl.textContent = multiple.toFixed(2) + "x";
+      runInfo.textContent = `${days} days • ${dailyPercent}% daily`;
+    }
+
+    function renderHistory(){
+      if (!history.length) {
+        resultBox.innerHTML = "Run a simulation and your daily growth timeline will appear here.";
+        return;
+      }
+
+      let html = "";
+      for (const item of history) {
+        html += `
+          <div class="historyItem">
+            <span>Day ${item.day}</span>
+            <strong>${formatCurrency(item.value)}</strong>
+          </div>
+        `;
+      }
+      resultBox.innerHTML = html;
+    }
+
+    function drawChart(labels, data){
+      const canvas = document.getElementById("chart");
+      const ctx = canvas.getContext("2d");
+
+      if (chart) {
+        chart.destroy();
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+      gradient.addColorStop(0, "rgba(0,245,160,0.35)");
+      gradient.addColorStop(1, "rgba(0,245,160,0.02)");
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "Portfolio Value",
+            data,
+            borderColor: "#00f5a0",
+            backgroundColor: gradient,
+            fill: true,
+            borderWidth: 2.5,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.28
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 1200,
+            easing: "easeOutQuart"
+          },
+          interaction: {
+            intersect: false,
+            mode: "index"
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: "#dce8ff",
+                boxWidth: 12
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgba(10,16,28,0.95)",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              titleColor: "#ffffff",
+              bodyColor: "#d7e7ff",
+              callbacks: {
+                label: function(context){
+                  return " " + formatCurrency(context.parsed.y);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: "rgba(255,255,255,0.05)"
+              },
+              ticks: {
+                color: "#9fb0d1",
+                maxTicksLimit: 10
+              }
+            },
+            y: {
+              grid: {
+                color: "rgba(255,255,255,0.05)"
+              },
+              ticks: {
+                color: "#9fb0d1",
+                callback: function(value){
+                  return "₹" + Number(value).toLocaleString("en-IN");
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function downloadFile(content, filename, type){
+      const blob = new Blob([content], { type });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+
+    function exportJSON(){
+      if (!history.length) {
+        showError("Run a simulation first before exporting JSON.");
+        return;
+      }
+      hideError();
+      downloadFile(
+        JSON.stringify(history, null, 2),
+        "portfolio-growth.json",
+        "application/json"
+      );
+    }
+
+    function exportCSV(){
+      if (!history.length) {
+        showError("Run a simulation first before exporting CSV.");
+        return;
+      }
+      hideError();
+
+      let csv = "Day,Value\n";
+      for (const row of history) {
+        csv += `${row.day},${row.value}\n`;
+      }
+
+      downloadFile(csv, "portfolio-growth.csv", "text/csv");
+    }
+
+    async function shareSimulation(){
+      hideError();
+
+      const { investment, profit, days } = getInputs();
+      const validationError = validateInputs({ investment, profit, days });
+
+      if (validationError) {
+        showError(validationError);
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("investment", investment);
+      url.searchParams.set("profit", profit);
+      url.searchParams.set("days", days);
+
+      const finalUrl = url.toString();
+      shareLinkEl.style.display = "block";
+      shareLinkEl.textContent = finalUrl;
+
+      try {
+        await navigator.clipboard.writeText(finalUrl);
+        shareBtn.textContent = "Copied!";
+        setTimeout(() => {
+          shareBtn.textContent = "Share Simulation";
+        }, 1400);
+      } catch (err) {
+        showError("Could not copy automatically. Your share link is shown below.");
+      }
+    }
+
+    function resetApp(){
+      investmentInput.value = "10000";
+      profitInput.value = "1.2";
+      daysInput.value = "30";
+
+      history = [];
+      hideError();
+
+      finalValueEl.textContent = "₹0.00";
+      totalProfitEl.textContent = "₹0.00";
+      growthMultipleEl.textContent = "0.00x";
+      runInfo.textContent = "Ready";
+      shareLinkEl.style.display = "none";
+      shareLinkEl.textContent = "";
+      resultBox.innerHTML = "Run a simulation and your daily growth timeline will appear here.";
+
+      if (chart) {
+        chart.destroy();
+        chart = null;
+      }
+
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.search = "";
+      window.history.replaceState({}, "", cleanUrl.toString());
+    }
+
+    function loadFromURL(){
+      const params = new URLSearchParams(window.location.search);
+
+      const investment = params.get("investment");
+      const profit = params.get("profit");
+      const days = params.get("days");
+
+      if (investment !== null) investmentInput.value = investment;
+      if (profit !== null) profitInput.value = profit;
+      if (days !== null) daysInput.value = days;
+
+      if (investment !== null || profit !== null || days !== null) {
+        simulate();
+      }
+    }
+
+    simulateBtn.addEventListener("click", simulate);
+    resetBtn.addEventListener("click", resetApp);
+    jsonBtn.addEventListener("click", exportJSON);
+    csvBtn.addEventListener("click", exportCSV);
+    shareBtn.addEventListener("click", shareSimulation);
+
+    [investmentInput, profitInput, daysInput].forEach(input => {
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter") simulate();
+      });
+    });
+
+    loadFromURL();
+  </script>
+</body>
+</html>
