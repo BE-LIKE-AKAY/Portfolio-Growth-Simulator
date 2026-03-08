@@ -77,7 +77,7 @@
     .app{
       position:relative;
       z-index:1;
-      width:min(1100px, 100%);
+      width:min(1150px, 100%);
       display:grid;
       grid-template-columns: 420px 1fr;
       gap:20px;
@@ -249,15 +249,30 @@
     }
 
     .historyItem{
-      display:flex;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns:80px 1fr 1fr;
       gap:10px;
       padding:8px 0;
       border-bottom:1px solid rgba(255,255,255,0.05);
+      align-items:center;
     }
 
     .historyItem:last-child{
       border-bottom:none;
+    }
+
+    .historyHeader{
+      display:grid;
+      grid-template-columns:80px 1fr 1fr;
+      gap:10px;
+      padding-bottom:8px;
+      margin-bottom:8px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      color:var(--muted);
+      font-weight:700;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:0.6px;
     }
 
     .topbar{
@@ -333,6 +348,11 @@
       .chartWrap{
         min-height:280px;
       }
+      .historyHeader,
+      .historyItem{
+        grid-template-columns:60px 1fr 1fr;
+        font-size:12px;
+      }
     }
   </style>
 </head>
@@ -342,7 +362,7 @@
       <div class="badge">🚀 Single-file • GitHub Pages Ready</div>
       <h1>Portfolio Growth Simulator</h1>
       <p class="sub">
-        Simulate daily compounding like a proper market nerd. Clean, dark, futuristic, and actually shareable without weird browser hacks.
+        Simulate daily compounding, export data, share links, and now save a neat image report of daily profit with totals.
       </p>
 
       <div class="grid">
@@ -367,7 +387,8 @@
         <button class="secondary" id="resetBtn">Reset</button>
         <button class="secondary" id="jsonBtn">Export JSON</button>
         <button class="secondary" id="csvBtn">Export CSV</button>
-        <button class="secondary" id="shareBtn" style="grid-column:1/-1;">Share Simulation</button>
+        <button class="secondary" id="imageBtn">Export Profit Image</button>
+        <button class="secondary" id="shareBtn">Share Simulation</button>
       </div>
 
       <div class="shareLink" id="shareLink"></div>
@@ -428,10 +449,12 @@
     const resetBtn = document.getElementById("resetBtn");
     const jsonBtn = document.getElementById("jsonBtn");
     const csvBtn = document.getElementById("csvBtn");
+    const imageBtn = document.getElementById("imageBtn");
     const shareBtn = document.getElementById("shareBtn");
 
     let chart = null;
     let history = [];
+    let lastInitialInvestment = 0;
 
     function formatCurrency(num){
       return new Intl.NumberFormat("en-IN", {
@@ -469,7 +492,7 @@
         return "Days must be at least 1.";
       }
       if (days > 5000) {
-        return "Days are too high. Keep it under 5000 or the browser may start questioning your life choices.";
+        return "Days are too high. Keep it under 5000 or your browser may start seeing ghosts.";
       }
       if (profit < -100) {
         return "Daily growth cannot be less than -100%.";
@@ -495,13 +518,19 @@
       const labels = [];
       const data = [];
       history = [];
+      lastInitialInvestment = investment;
 
       for (let i = 1; i <= days; i++) {
+        const previousValue = value;
         value = value * (1 + dailyRate);
+        const dayProfit = value - previousValue;
+
         labels.push("Day " + i);
         data.push(Number(value.toFixed(2)));
+
         history.push({
           day: i,
+          profit: Number(dayProfit.toFixed(2)),
           value: Number(value.toFixed(2))
         });
       }
@@ -527,15 +556,24 @@
         return;
       }
 
-      let html = "";
+      let html = `
+        <div class="historyHeader">
+          <span>Day</span>
+          <span>Profit</span>
+          <span>Total Value</span>
+        </div>
+      `;
+
       for (const item of history) {
         html += `
           <div class="historyItem">
             <span>Day ${item.day}</span>
+            <strong>${formatCurrency(item.profit)}</strong>
             <strong>${formatCurrency(item.value)}</strong>
           </div>
         `;
       }
+
       resultBox.innerHTML = html;
     }
 
@@ -655,12 +693,128 @@
       }
       hideError();
 
-      let csv = "Day,Value\n";
+      let csv = "Day,Profit,Value\n";
       for (const row of history) {
-        csv += `${row.day},${row.value}\n`;
+        csv += `${row.day},${row.profit},${row.value}\n`;
       }
 
       downloadFile(csv, "portfolio-growth.csv", "text/csv");
+    }
+
+    function exportProfitImage(){
+      if (!history.length) {
+        showError("Run a simulation first before exporting an image.");
+        return;
+      }
+
+      hideError();
+
+      const finalValue = history[history.length - 1].value;
+      const totalProfit = finalValue - lastInitialInvestment;
+      const multiple = lastInitialInvestment === 0 ? 0 : finalValue / lastInitialInvestment;
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const rowHeight = 34;
+      const headerHeight = 170;
+      const footerHeight = 90;
+      const maxRowsPerImage = 40;
+      const totalRows = Math.min(history.length, maxRowsPerImage);
+
+      canvas.width = 1200;
+      canvas.height = headerHeight + (totalRows * rowHeight) + footerHeight;
+
+      const bg = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      bg.addColorStop(0, "#07101b");
+      bg.addColorStop(0.5, "#0b1424");
+      bg.addColorStop(1, "#07111c");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "rgba(0,245,160,0.08)";
+      ctx.beginPath();
+      ctx.arc(150, 110, 140, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(0,194,255,0.08)";
+      ctx.beginPath();
+      ctx.arc(1020, 120, 150, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 1;
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 42px Arial";
+      ctx.fillText("Portfolio Growth Report", 50, 60);
+
+      ctx.fillStyle = "#9fb0d1";
+      ctx.font = "20px Arial";
+      ctx.fillText(`Initial Investment: ${formatCurrency(lastInitialInvestment)}`, 50, 100);
+      ctx.fillText(`Daily Growth: ${profitInput.value}%`, 50, 132);
+      ctx.fillText(`Days: ${history.length}`, 380, 132);
+
+      ctx.fillStyle = "#00f5a0";
+      ctx.font = "bold 28px Arial";
+      ctx.fillText(`Final Value: ${formatCurrency(finalValue)}`, 720, 70);
+      ctx.fillText(`Total Profit: ${formatCurrency(totalProfit)}`, 720, 108);
+
+      ctx.fillStyle = "#cfefff";
+      ctx.font = "bold 24px Arial";
+      ctx.fillText(`Growth Multiple: ${multiple.toFixed(2)}x`, 720, 144);
+
+      const tableTop = 185;
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.fillRect(40, tableTop, 1120, 42);
+
+      ctx.fillStyle = "#9fe7ff";
+      ctx.font = "bold 18px Arial";
+      ctx.fillText("Day", 70, tableTop + 27);
+      ctx.fillText("Profit", 360, tableTop + 27);
+      ctx.fillText("Total Value", 760, tableTop + 27);
+
+      ctx.font = "17px Arial";
+
+      for (let i = 0; i < totalRows; i++) {
+        const item = history[i];
+        const y = tableTop + 42 + (i * rowHeight);
+
+        if (i % 2 === 0) {
+          ctx.fillStyle = "rgba(255,255,255,0.025)";
+          ctx.fillRect(40, y - 22, 1120, rowHeight);
+        }
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(`Day ${item.day}`, 70, y);
+
+        ctx.fillStyle = item.profit >= 0 ? "#00f5a0" : "#ff6b81";
+        ctx.fillText(formatCurrency(item.profit), 360, y);
+
+        ctx.fillStyle = "#dfeaff";
+        ctx.fillText(formatCurrency(item.value), 760, y);
+      }
+
+      if (history.length > maxRowsPerImage) {
+        ctx.fillStyle = "#9fb0d1";
+        ctx.font = "italic 16px Arial";
+        ctx.fillText(`Showing first ${maxRowsPerImage} days out of ${history.length} total days.`, 50, canvas.height - 50);
+      }
+
+      ctx.fillStyle = "#7f96ba";
+      ctx.font = "16px Arial";
+      ctx.fillText("Generated by Portfolio Growth Simulator", 50, canvas.height - 20);
+
+      const link = document.createElement("a");
+      link.download = "portfolio-growth-report.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     }
 
     async function shareSimulation(){
@@ -700,6 +854,7 @@
       daysInput.value = "30";
 
       history = [];
+      lastInitialInvestment = 0;
       hideError();
 
       finalValueEl.textContent = "₹0.00";
@@ -740,6 +895,7 @@
     resetBtn.addEventListener("click", resetApp);
     jsonBtn.addEventListener("click", exportJSON);
     csvBtn.addEventListener("click", exportCSV);
+    imageBtn.addEventListener("click", exportProfitImage);
     shareBtn.addEventListener("click", shareSimulation);
 
     [investmentInput, profitInput, daysInput].forEach(input => {
