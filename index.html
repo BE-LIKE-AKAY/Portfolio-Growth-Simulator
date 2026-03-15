@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Daily Compounding Lab</title>
+  <title>Daily Compounding Lab — Futurist + Local AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
       --bg-main: #020617;
       --bg-card: rgba(15, 23, 42, 0.9);
-      --bg-card-soft: rgba(15, 23, 42, 0.7);
+      --bg-card-soft: rgba(15, 23, 42, 0.75);
       --accent: #22d3ee;
       --accent-2: #a855f7;
       --accent-3: #4ade80;
@@ -16,8 +16,8 @@
       --text: #e5e7eb;
       --muted: #64748b;
       --border-subtle: rgba(148, 163, 184, 0.3);
-      --radius-lg: 20px;
-      --shadow-soft: 0 22px 60px rgba(15, 23, 42, 0.95);
+      --radius-lg: 22px;
+      --shadow-soft: 0 26px 80px rgba(15, 23, 42, 1);
       --glass-border: 1px solid rgba(148, 163, 184, 0.35);
     }
 
@@ -30,62 +30,128 @@
       min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
         "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.15) 0, transparent 55%),
-        radial-gradient(circle at 90% 100%, rgba(168, 85, 247, 0.18) 0, transparent 60%),
-        radial-gradient(circle at 0% 100%, rgba(34, 197, 94, 0.14) 0, transparent 55%),
-        linear-gradient(135deg, #020617, #020617 45%, #020617);
+      background-color: var(--bg-main);
       color: var(--text);
       overflow-x: hidden;
+      position: relative;
+      isolation: isolate;
     }
 
-    /* Floating amorphous blobs (3D-ish background motion) */
-    body::before,
-    body::after {
-      content: "";
+    /* Neon cyberpunk grid + scanline overlay */
+    .bg-grid {
       position: fixed;
-      width: 480px;
-      height: 480px;
+      inset: 0;
+      z-index: -3;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.25) 0, transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(168, 85, 247, 0.35) 0, transparent 60%),
+        radial-gradient(circle at 0% 100%, rgba(34, 197, 94, 0.26) 0, transparent 55%);
+      overflow: hidden;
+    }
+
+    .bg-grid::before {
+      content: "";
+      position: absolute;
+      inset: -50%;
+      background-image:
+        linear-gradient(
+          rgba(15, 23, 42, 0.4) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(15, 23, 42, 0.4) 1px,
+          transparent 1px
+        );
+      background-size: 40px 40px;
+      opacity: 0.65;
+      transform: perspective(900px) rotateX(65deg) translateY(120px);
+      transform-origin: top;
+      animation: gridDrift 30s linear infinite;
+    }
+
+    .bg-grid::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(
+        rgba(15, 23, 42, 0.1) 1px,
+        transparent 1px
+      );
+      background-size: 100% 2px;
+      mix-blend-mode: soft-light;
+      opacity: 0.6;
+      animation: scanlines 6s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      0% {
+        transform: perspective(900px) rotateX(65deg) translateY(120px);
+      }
+      50% {
+        transform: perspective(900px) rotateX(63deg) translateY(140px);
+      }
+      100% {
+        transform: perspective(900px) rotateX(67deg) translateY(110px);
+      }
+    }
+
+    @keyframes scanlines {
+      0% {
+        background-position-y: 0;
+      }
+      100% {
+        background-position-y: 200%;
+      }
+    }
+
+    /* Floating blobs */
+    .blob {
+      position: fixed;
+      width: 380px;
+      height: 380px;
       border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
       filter: blur(28px);
-      opacity: 0.45;
-      z-index: -2;
+      opacity: 0.5;
       mix-blend-mode: screen;
       pointer-events: none;
-      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.7), transparent 60%);
-      animation: blobMove1 26s ease-in-out infinite alternate;
+      z-index: -2;
     }
 
-    body::after {
-      right: -120px;
-      bottom: -60px;
-      left: auto;
-      top: auto;
-      background: radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.85), transparent 60%);
-      animation: blobMove2 30s ease-in-out infinite alternate;
+    .blob.blob-a {
+      left: -120px;
+      top: -120px;
+      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.9), transparent 60%);
+      animation: blobA 26s ease-in-out infinite alternate;
+    }
+    .blob.blob-b {
+      right: -140px;
+      bottom: -120px;
+      background: radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.95), transparent 60%);
+      animation: blobB 30s ease-in-out infinite alternate;
     }
 
-    @keyframes blobMove1 {
+    @keyframes blobA {
       0% {
-        transform: translate3d(-140px, -120px, 0) rotate(0deg) scale(1);
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
       }
       50% {
-        transform: translate3d(40px, -40px, 0) rotate(12deg) scale(1.05);
+        transform: translate3d(40px, 20px, 0) rotate(15deg) scale(1.08);
       }
       100% {
-        transform: translate3d(-80px, 60px, 0) rotate(-10deg) scale(1.02);
+        transform: translate3d(-20px, 40px, 0) rotate(-10deg) scale(1.02);
       }
     }
 
-    @keyframes blobMove2 {
+    @keyframes blobB {
       0% {
-        transform: translate3d(80px, 80px, 0) rotate(0deg) scale(1);
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
       }
       50% {
-        transform: translate3d(-40px, 0px, 0) rotate(-14deg) scale(1.08);
+        transform: translate3d(-40px, -20px, 0) rotate(-12deg) scale(1.06);
       }
       100% {
-        transform: translate3d(40px, -60px, 0) rotate(8deg) scale(1.02);
+        transform: translate3d(20px, -40px, 0) rotate(8deg) scale(1.03);
       }
     }
 
@@ -111,15 +177,16 @@
 
     h1 {
       margin: 0;
-      font-size: 1.8rem;
-      letter-spacing: 0.05em;
+      font-size: 1.9rem;
+      letter-spacing: 0.07em;
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      text-transform: uppercase;
       text-shadow:
-        0 0 20px rgba(56, 189, 248, 0.6),
+        0 0 22px rgba(56, 189, 248, 0.6),
         0 0 40px rgba(15, 23, 42, 1);
-      background: linear-gradient(120deg, #e0f2fe, #a5b4fc, #f9a8d4);
+      background: linear-gradient(120deg, #f9fafb, #a5b4fc, #f9a8d4);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -140,7 +207,7 @@
     .subtitle {
       font-size: 0.9rem;
       color: var(--muted);
-      max-width: 540px;
+      max-width: 560px;
     }
 
     .pill-row {
@@ -155,7 +222,7 @@
       font-size: 0.78rem;
       padding: 4px 11px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.6);
       background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.85));
       color: var(--muted);
       display: inline-flex;
@@ -195,10 +262,37 @@
         justify-content: flex-start;
       }
       h1 {
-        font-size: 1.45rem;
+        font-size: 1.55rem;
       }
       .subtitle {
         font-size: 0.85rem;
+      }
+    }
+
+    /* Animated gradient border wrapper for main cards */
+    .card-shell {
+      position: relative;
+      border-radius: var(--radius-lg);
+      padding: 1px;
+      background-image: conic-gradient(
+        from var(--angle, 0turn),
+        rgba(56, 189, 248, 1),
+        rgba(168, 85, 247, 1),
+        rgba(56, 189, 248, 1)
+      );
+      animation: spinBorder 18s linear infinite;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+
+    @property --angle {
+      syntax: "<angle>";
+      initial-value: 0turn;
+      inherits: false;
+    }
+
+    @keyframes spinBorder {
+      to {
+        --angle: 1turn;
       }
     }
 
@@ -225,38 +319,6 @@
         background 0.3s ease;
     }
 
-    /* subtle floating animation on cards */
-    .card:nth-of-type(1) {
-      animation: floatCard1 18s ease-in-out infinite alternate;
-    }
-    .card:nth-of-type(2) {
-      animation: floatCard2 22s ease-in-out infinite alternate;
-    }
-
-    @keyframes floatCard1 {
-      0% {
-        transform: translateY(0px) translateZ(0);
-      }
-      50% {
-        transform: translateY(-4px) translateZ(0);
-      }
-      100% {
-        transform: translateY(2px) translateZ(0);
-      }
-    }
-
-    @keyframes floatCard2 {
-      0% {
-        transform: translateY(0px) translateZ(0);
-      }
-      50% {
-        transform: translateY(3px) translateZ(0);
-      }
-      100% {
-        transform: translateY(-3px) translateZ(0);
-      }
-    }
-
     .card::before {
       content: "";
       position: absolute;
@@ -271,15 +333,15 @@
       pointer-events: none;
     }
 
-    .card:hover {
-      transform: translateY(-4px) translateZ(0);
+    .card-shell:hover .card {
+      transform: translateY(-4px) translateZ(0) rotate3d(1, -1, 0, 0.6deg);
       box-shadow:
-        0 26px 70px rgba(15, 23, 42, 1),
+        0 30px 80px rgba(15, 23, 42, 1),
         0 0 0 1px rgba(148, 163, 184, 0.5);
       border-color: rgba(56, 189, 248, 0.65);
       background: radial-gradient(
           circle at 0% 0%,
-          rgba(56, 189, 248, 0.3),
+          rgba(56, 189, 248, 0.32),
           transparent 55%
         ),
         var(--bg-card);
@@ -296,7 +358,7 @@
     .card-title {
       font-size: 0.98rem;
       font-weight: 500;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
       color: #e5e7eb;
       display: inline-flex;
@@ -310,7 +372,7 @@
       border-radius: 50%;
       background: radial-gradient(circle, #22d3ee, transparent);
       box-shadow:
-        0 0 14px rgba(34, 211, 238, 0.9),
+        0 0 16px rgba(34, 211, 238, 0.9),
         0 0 28px rgba(56, 189, 248, 0.9);
     }
 
@@ -350,8 +412,8 @@
       width: 100%;
       padding: 7px 11px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.84));
       color: var(--text);
       font-size: 0.9rem;
       outline: none;
@@ -431,7 +493,7 @@
 
     .btn-ghost {
       background: rgba(15, 23, 42, 0.92);
-      border: 1px solid rgba(148, 163, 184, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.7);
       color: var(--muted);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -493,10 +555,10 @@
       padding: 7px 9px;
       background: linear-gradient(
         145deg,
-        rgba(15, 23, 42, 0.97),
-        rgba(15, 23, 42, 0.85)
+        rgba(15, 23, 42, 0.98),
+        rgba(15, 23, 42, 0.88)
       );
-      border: 1px solid rgba(148, 163, 184, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.65);
       box-shadow: 0 16px 36px rgba(15, 23, 42, 0.96);
       position: relative;
       overflow: hidden;
@@ -513,7 +575,7 @@
       inset: -40px auto auto -40px;
       background: radial-gradient(
         circle at 0% 0%,
-        rgba(56, 189, 248, 0.24),
+        rgba(56, 189, 248, 0.28),
         transparent 60%
       );
       opacity: 0.8;
@@ -524,8 +586,8 @@
       transform: translateY(-1px);
       box-shadow:
         0 18px 40px rgba(15, 23, 42, 1),
-        0 0 0 1px rgba(56, 189, 248, 0.5);
-      border-color: rgba(56, 189, 248, 0.7);
+        0 0 0 1px rgba(56, 189, 248, 0.55);
+      border-color: rgba(56, 189, 248, 0.8);
     }
 
     .stat-label {
@@ -563,10 +625,21 @@
       background: radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.15), transparent 60%),
         radial-gradient(circle at 100% 0, rgba(56, 189, 248, 0.2), transparent 60%),
         linear-gradient(145deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.92));
-      border: 1px solid rgba(30, 64, 175, 0.55);
+      border: 1px solid rgba(30, 64, 175, 0.6);
       box-shadow:
         0 20px 44px rgba(15, 23, 42, 0.98),
         0 0 0 1px rgba(15, 23, 42, 0.9) inset;
+    }
+
+    .chart-container::after {
+      content: "";
+      position: absolute;
+      inset: auto 18% -26px 18%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.35), transparent 70%);
+      opacity: 0.6;
+      filter: blur(8px);
+      pointer-events: none;
     }
 
     .chart-header {
@@ -841,329 +914,361 @@
   </style>
 </head>
 <body>
+  <div class="bg-grid"></div>
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+
   <div class="page">
     <header>
       <div class="title">
         <h1>
           Daily Compounding Lab
-          <span class="badge">Client‑Side • Shareable • Export Ready</span>
+          <span class="badge">Client‑Side • Shareable • Local AI</span>
         </h1>
         <div class="subtitle">
-          Simulate daily compounding with a futuristic glassmorphism UI, export JSON/CSV/PNG,
-          and share scenarios via URL—no backend required.
+          Simulate daily compounding with a cyber‑futuristic glass UI, export JSON / CSV / PNG,
+          share scenarios via URL, and let an on‑device AI explain your simulation.
         </div>
       </div>
       <div class="pill-row">
-        <span class="pill"><strong>Dark</strong> theme</span>
+        <span class="pill"><strong>Dark</strong> matrix grid</span>
         <span class="pill"><strong>Neon</strong> gradients</span>
         <span class="pill"><strong>Offline</strong> GitHub Pages</span>
-        <span class="pill"><strong>Responsive</strong> desktop & mobile</span>
+        <span class="pill"><strong>Local</strong> AI (no backend)</span>
       </div>
     </header>
 
     <main>
       <!-- LEFT: INPUTS, STATS, CHART -->
-      <section class="card" id="leftPanel">
-        <div class="card-header">
-          <div>
-            <div class="card-title">
-              <span class="dot"></span>
-              Portfolio input
-            </div>
-            <div class="card-subtitle">
-              Configure initial stack, daily growth %, and horizon in days.
-            </div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="initial">Initial investment</label>
-            <input
-              type="number"
-              id="initial"
-              min="0"
-              step="0.01"
-              placeholder="e.g. 1000"
-            />
-            <div class="hint">Must be greater than 0</div>
-          </div>
-          <div class="field">
-            <label for="dailyRate">Daily growth %</label>
-            <input
-              type="number"
-              id="dailyRate"
-              step="0.01"
-              placeholder="e.g. 1.5"
-            />
-            <div class="hint">Can be negative, but not less than -100%</div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="days">Number of days</label>
-            <input
-              type="number"
-              id="days"
-              min="1"
-              step="1"
-              placeholder="e.g. 365"
-            />
-            <div class="hint">Between 1 and 5000 days</div>
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <div class="btn-row">
-              <button class="btn-primary" id="runBtn">Run simulation</button>
-              <button class="btn-ghost btn-sm" id="resetBtn">Reset</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="error" id="errorBox"></div>
-
-        <div class="stats-grid" id="statsGrid" aria-live="polite">
-          <div class="stat-card">
-            <div class="stat-label">Final value</div>
-            <div class="stat-value" id="finalValue">–</div>
-            <div class="stat-chip" id="finalValueChip">Simulated result</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Total profit</div>
-            <div class="stat-value" id="totalProfit">–</div>
-            <div class="stat-chip" id="profitChip">Waiting for run</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Growth multiple</div>
-            <div class="stat-value" id="growthMultiple">–</div>
-            <div class="stat-chip" id="multipleChip">Target 2x? 5x?</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Simulated days</div>
-            <div class="stat-value" id="daysSimulated">–</div>
-            <div class="stat-chip">Daily compounding</div>
-          </div>
-        </div>
-
-        <div class="chart-container">
-          <div class="chart-header">
-            <div class="chart-title">
-              <span class="spark"></span>
-              Portfolio value curve
-            </div>
-            <div class="chart-legend">
-              <span class="legend-dot"></span>
-              Daily compounding
-            </div>
-          </div>
-          <canvas id="growthChart"></canvas>
-        </div>
-      </section>
-
-      <!-- RIGHT: TABLE + EXPORTS + PLANNERS -->
-      <section class="card" id="rightPanel">
-        <div class="card-header">
-          <div>
-            <div class="card-title">
-              <span class="dot"></span>
-              Daily history
-            </div>
-            <div class="card-subtitle">
-              Each day’s profit and total portfolio value in a scrollable table.
-            </div>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <div class="table-header">
-            <span>
-              Daily rows
-              <small id="rowCountLabel">(no data yet)</small>
-            </span>
-            <span>
-              Profit & value
-            </span>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Day</th>
-                  <th>Profit</th>
-                  <th>Total value</th>
-                </tr>
-              </thead>
-              <tbody id="historyBody">
-                <!-- rows injected here -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="secondary-grid">
-          <!-- EXPORTS -->
-          <div class="mini-card">
-            <div class="mini-title">
-              <span class="icon">⇩</span>
-              Exports
-            </div>
-            <div class="mini-body">
-              Download the full simulation for backup, Excel, or reporting.
-            </div>
-            <div class="mini-grid">
-              <button class="btn-ghost btn-sm" id="exportJsonBtn">
-                JSON
-              </button>
-              <button class="btn-ghost btn-sm" id="exportCsvBtn">
-                CSV
-              </button>
-              <button class="btn-ghost btn-sm" id="exportPngBtn">
-                PNG report
-              </button>
-            </div>
-            <div class="note">
-              PNG report includes stats + first 40 daily rows.
-            </div>
-          </div>
-
-          <!-- SHARE -->
-          <div class="mini-card">
-            <div class="mini-title">
-              <span class="icon">∞</span>
-              Share via URL
-            </div>
-            <div class="mini-body">
-              Generate a shareable link with initial, daily %, and days embedded as
-              query parameters.
-            </div>
-            <input
-              id="shareLink"
-              class="share-input"
-              type="text"
-              readonly
-              placeholder="Run a simulation to generate a shareable URL"
-            />
-            <div class="share-row">
-              <button class="btn-ghost btn-sm" id="makeLinkBtn">
-                Generate link
-              </button>
-              <button class="btn-ghost btn-sm" id="copyLinkBtn">
-                Copy
-              </button>
-            </div>
-            <div class="note">
-              When someone opens the link, the simulator auto-loads the values and
-              runs the same scenario.
-            </div>
-          </div>
-        </div>
-
-        <div class="secondary-grid" style="margin-top: 10px;">
-          <!-- NEXT TARGET HELPER -->
-          <div class="mini-card">
-            <div class="mini-title">
-              <span class="icon">▶</span>
-              Next target helper
-            </div>
-            <div class="mini-body">
-              Big win or loss today? See how much you need for the next target.
-            </div>
-            <div class="mini-grid">
-              <div class="field">
-                <label for="currentValueTarget">Current value</label>
-                <input
-                  type="number"
-                  id="currentValueTarget"
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g. use final value"
-                />
+      <div class="card-shell">
+        <section class="card" id="leftPanel">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="dot"></span>
+                Portfolio input
               </div>
-              <div class="field">
-                <label for="nextTargetValue">Next target value</label>
-                <input
-                  type="number"
-                  id="nextTargetValue"
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g. 2x, 3x..."
-                />
+              <div class="card-subtitle">
+                Configure initial stack, daily growth %, and horizon in days.
               </div>
             </div>
-            <div class="btn-row" style="margin-top: 6px;">
-              <button class="btn-ghost btn-sm" id="calcNextTargetBtn">
-                Calculate requirement
-              </button>
-            </div>
-            <div class="result-text" id="nextTargetResult"></div>
           </div>
 
-          <!-- TARGET DAYS / PERCENT PLANNER -->
-          <div class="mini-card">
-            <div class="mini-title">
-              <span class="icon">⚙</span>
-              Target planner
+          <div class="grid-2">
+            <div class="field">
+              <label for="initial">Initial investment</label>
+              <input
+                type="number"
+                id="initial"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 1000"
+              />
+              <div class="hint">Must be greater than 0</div>
             </div>
-            <div class="mini-body">
-              Enter current and target amount, plus either daily % or days.
-              The tool will solve the missing side.
+            <div class="field">
+              <label for="dailyRate">Daily growth %</label>
+              <input
+                type="number"
+                id="dailyRate"
+                step="0.01"
+                placeholder="e.g. 1.5"
+              />
+              <div class="hint">Can be negative, but not less than -100%</div>
             </div>
-            <div class="mini-grid">
-              <div class="field">
-                <label for="plannerCurrent">Current amount</label>
-                <input
-                  type="number"
-                  id="plannerCurrent"
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g. initial or current value"
-                />
-              </div>
-              <div class="field">
-                <label for="plannerTarget">Target amount</label>
-                <input
-                  type="number"
-                  id="plannerTarget"
-                  min="0"
-                  step="0.01"
-                  placeholder="desired portfolio"
-                />
-              </div>
-            </div>
-            <div class="mini-grid" style="margin-top: 6px;">
-              <div class="field">
-                <label for="plannerRate">Daily growth %</label>
-                <input
-                  type="number"
-                  id="plannerRate"
-                  step="0.01"
-                  placeholder="fill this OR days"
-                />
-              </div>
-              <div class="field">
-                <label for="plannerDays">Days</label>
-                <input
-                  type="number"
-                  id="plannerDays"
-                  min="1"
-                  step="1"
-                  placeholder="fill this OR rate"
-                />
-              </div>
-            </div>
-            <div class="btn-row" style="margin-top: 6px;">
-              <button class="btn-ghost btn-sm" id="plannerCalcBtn">
-                Compute plan
-              </button>
-            </div>
-            <div class="result-text" id="plannerResult"></div>
           </div>
-        </div>
-      </section>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="days">Number of days</label>
+              <input
+                type="number"
+                id="days"
+                min="1"
+                step="1"
+                placeholder="e.g. 365"
+              />
+              <div class="hint">Between 1 and 5000 days</div>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <div class="btn-row">
+                <button class="btn-primary" id="runBtn">Run simulation</button>
+                <button class="btn-ghost btn-sm" id="resetBtn">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="error" id="errorBox"></div>
+
+          <div class="stats-grid" id="statsGrid" aria-live="polite">
+            <div class="stat-card">
+              <div class="stat-label">Final value</div>
+              <div class="stat-value" id="finalValue">–</div>
+              <div class="stat-chip" id="finalValueChip">Simulated result</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total profit</div>
+              <div class="stat-value" id="totalProfit">–</div>
+              <div class="stat-chip" id="profitChip">Waiting for run</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Growth multiple</div>
+              <div class="stat-value" id="growthMultiple">–</div>
+              <div class="stat-chip" id="multipleChip">Target 2x? 5x?</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Simulated days</div>
+              <div class="stat-value" id="daysSimulated">–</div>
+              <div class="stat-chip">Daily compounding</div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-header">
+              <div class="chart-title">
+                <span class="spark"></span>
+                Portfolio value curve
+              </div>
+              <div class="chart-legend">
+                <span class="legend-dot"></span>
+                Daily compounding
+              </div>
+            </div>
+            <canvas id="growthChart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT: TABLE + EXPORTS + PLANNERS + AI -->
+      <div class="card-shell">
+        <section class="card" id="rightPanel">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="dot"></span>
+                Daily history
+              </div>
+              <div class="card-subtitle">
+                Each day’s profit and total portfolio value in a scrollable table.
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-header">
+              <span>
+                Daily rows
+                <small id="rowCountLabel">(no data yet)</small>
+              </span>
+              <span>
+                Profit & value
+              </span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Day</th>
+                    <th>Profit</th>
+                    <th>Total value</th>
+                  </tr>
+                </thead>
+                <tbody id="historyBody">
+                  <!-- rows injected here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="secondary-grid">
+            <!-- EXPORTS -->
+            <div class="mini-card">
+              <div class="mini-title">
+                <span class="icon">⇩</span>
+                Exports
+              </div>
+              <div class="mini-body">
+                Download the full simulation for backup, Excel, or reporting.
+              </div>
+              <div class="mini-grid">
+                <button class="btn-ghost btn-sm" id="exportJsonBtn">
+                  JSON
+                </button>
+                <button class="btn-ghost btn-sm" id="exportCsvBtn">
+                  CSV
+                </button>
+                <button class="btn-ghost btn-sm" id="exportPngBtn">
+                  PNG report
+                </button>
+              </div>
+              <div class="note">
+                PNG report includes stats + first 40 daily rows.
+              </div>
+            </div>
+
+            <!-- SHARE -->
+            <div class="mini-card">
+              <div class="mini-title">
+                <span class="icon">∞</span>
+                Share via URL
+              </div>
+              <div class="mini-body">
+                Generate a shareable link with initial, daily %, and days embedded as
+                query parameters.
+              </div>
+              <input
+                id="shareLink"
+                class="share-input"
+                type="text"
+                readonly
+                placeholder="Run a simulation to generate a shareable URL"
+              />
+              <div class="share-row">
+                <button class="btn-ghost btn-sm" id="makeLinkBtn">
+                  Generate link
+                </button>
+                <button class="btn-ghost btn-sm" id="copyLinkBtn">
+                  Copy
+                </button>
+              </div>
+              <div class="note">
+                When someone opens the link, the simulator auto-loads the values and
+                runs the same scenario.
+              </div>
+            </div>
+          </div>
+
+          <div class="secondary-grid" style="margin-top: 10px;">
+            <!-- NEXT TARGET HELPER -->
+            <div class="mini-card">
+              <div class="mini-title">
+                <span class="icon">▶</span>
+                Next target helper
+              </div>
+              <div class="mini-body">
+                Big win or loss today? See how much you need for the next target.
+              </div>
+              <div class="mini-grid">
+                <div class="field">
+                  <label for="currentValueTarget">Current value</label>
+                  <input
+                    type="number"
+                    id="currentValueTarget"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. use final value"
+                  />
+                </div>
+                <div class="field">
+                  <label for="nextTargetValue">Next target value</label>
+                  <input
+                    type="number"
+                    id="nextTargetValue"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 2x, 3x..."
+                  />
+                </div>
+              </div>
+              <div class="btn-row" style="margin-top: 6px;">
+                <button class="btn-ghost btn-sm" id="calcNextTargetBtn">
+                  Calculate requirement
+                </button>
+              </div>
+              <div class="result-text" id="nextTargetResult"></div>
+            </div>
+
+            <!-- TARGET DAYS / PERCENT PLANNER -->
+            <div class="mini-card">
+              <div class="mini-title">
+                <span class="icon">⚙</span>
+                Target planner
+              </div>
+              <div class="mini-body">
+                Enter current and target amount, plus either daily % or days.
+                The tool will solve the missing side.
+              </div>
+              <div class="mini-grid">
+                <div class="field">
+                  <label for="plannerCurrent">Current amount</label>
+                  <input
+                    type="number"
+                    id="plannerCurrent"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. initial or current value"
+                  />
+                </div>
+                <div class="field">
+                  <label for="plannerTarget">Target amount</label>
+                  <input
+                    type="number"
+                    id="plannerTarget"
+                    min="0"
+                    step="0.01"
+                    placeholder="desired portfolio"
+                  />
+                </div>
+              </div>
+              <div class="mini-grid" style="margin-top: 6px;">
+                <div class="field">
+                  <label for="plannerRate">Daily growth %</label>
+                  <input
+                    type="number"
+                    id="plannerRate"
+                    step="0.01"
+                    placeholder="fill this OR days"
+                  />
+                </div>
+                <div class="field">
+                  <label for="plannerDays">Days</label>
+                  <input
+                    type="number"
+                    id="plannerDays"
+                    min="1"
+                    step="1"
+                    placeholder="fill this OR rate"
+                  />
+                </div>
+              </div>
+              <div class="btn-row" style="margin-top: 6px;">
+                <button class="btn-ghost btn-sm" id="plannerCalcBtn">
+                  Compute plan
+                </button>
+              </div>
+              <div class="result-text" id="plannerResult"></div>
+            </div>
+          </div>
+
+          <!-- AI INSIGHTS -->
+          <div class="secondary-grid" style="margin-top: 10px;">
+            <div class="mini-card">
+              <div class="mini-title">
+                <span class="icon">🤖</span>
+                AI insights (local)
+              </div>
+              <div class="mini-body">
+                Run a small on-device language model in your browser to explain this
+                simulation in plain language.
+              </div>
+              <div class="btn-row" style="margin-top: 6px;">
+                <button class="btn-ghost btn-sm" id="aiExplainBtn">
+                  Explain with AI
+                </button>
+              </div>
+              <div class="result-text" id="aiExplainResult"></div>
+              <div class="note">
+                First run downloads the model (can be 100MB+); later runs are much faster.
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
+  <!-- Core simulation logic (non-module) -->
   <script>
     (function () {
       "use strict";
@@ -1220,15 +1325,16 @@
         daysInput.value = "365";
       }
 
+      // UI: integers only, full amount with grouping
       function formatCurrency(value) {
         if (!isFinite(value)) return "–";
         try {
-          return value.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+          return Math.round(value).toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
           });
         } catch (_) {
-          return value.toFixed(2);
+          return String(Math.round(value));
         }
       }
 
@@ -1599,11 +1705,11 @@
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, width, height);
 
-        ctx.fillStyle = "rgba(56,189,248,0.2)";
+        ctx.fillStyle = "rgba(56,189,248,0.25)";
         ctx.beginPath();
         ctx.arc(width * 0.2, 0, 320, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "rgba(168,85,247,0.16)";
+        ctx.fillStyle = "rgba(168,85,247,0.18)";
         ctx.beginPath();
         ctx.arc(width, height * 0.4, 420, 0, Math.PI * 2);
         ctx.fill();
@@ -1903,6 +2009,22 @@
         runSimulation(true);
       }
 
+      // Expose summary for the AI module
+      window.__getSimSummary = function () {
+        if (!lastMeta || !historyData.length) return null;
+        const first = historyData[0];
+        const mid = historyData[Math.floor(historyData.length / 2)];
+        const last = historyData[historyData.length - 1];
+        return {
+          meta: lastMeta,
+          sample: {
+            firstDay: { day: first.day, value: first.total },
+            midDay: { day: mid.day, value: mid.total },
+            lastDay: { day: last.day, value: last.total },
+          },
+        };
+      };
+
       runBtn.addEventListener("click", () => runSimulation(false));
       resetBtn.addEventListener("click", () => {
         errorBox.textContent = "";
@@ -1933,5 +2055,84 @@
       });
     })();
   </script>
+
+  <!-- Local AI integration using transformers.js in the browser -->
+  <script type="module">
+  import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2";
+
+  const aiBtn = document.getElementById("aiExplainBtn");
+  const aiOut = document.getElementById("aiExplainResult");
+
+  let summarizer = null;
+  let loadingModel = false;
+
+  function buildDescription(summary) {
+    const { meta, sample } = summary;
+    return (
+      "Daily compounding simulation summary.\n\n" +
+      "Parameters:\n" +
+      "- Initial investment: " + meta.initial + "\n" +
+      "- Daily growth percentage: " + meta.rate + "%\n" +
+      "- Number of days: " + meta.days + "\n" +
+      "- Final value: " + meta.finalValue + "\n" +
+      "- Total profit: " + meta.totalProfit + "\n" +
+      "- Growth multiple: " + meta.multiple.toFixed(3) + "x\n\n" +
+      "Trajectory examples:\n" +
+      "- Day " + sample.firstDay.day + ": value " + sample.firstDay.value + "\n" +
+      "- Day " + sample.midDay.day + ": value " + sample.midDay.value + "\n" +
+      "- Day " + sample.lastDay.day + ": value " + sample.lastDay.value + "\n\n" +
+      "Explain in a concise, friendly way what this compounding pattern means, how aggressive the daily percentage seems for real trading, " +
+      "and give 2–3 realistic suggestions for safer targets and expectations."
+    );
+  }
+
+  if (aiBtn && aiOut) {
+    aiBtn.addEventListener("click", async () => {
+      const getSummary = window.__getSimSummary;
+      const summary = typeof getSummary === "function" ? getSummary() : null;
+      if (!summary) {
+        aiOut.textContent = "Run a simulation first so AI has something to analyze.";
+        return;
+      }
+
+      try {
+        if (!summarizer) {
+          if (loadingModel) {
+            aiOut.textContent = "Model is loading… please wait.";
+            return;
+          }
+          loadingModel = true;
+          aiOut.textContent =
+            "Loading on-device summarization model (first time can take a while; downloads model files)…";
+
+          // DistilBART summarization model with ONNX weights for transformers.js
+          // Smaller 6-6 variant is lighter than 12-6 but still good quality.[web:60][web:62]
+          summarizer = await pipeline(
+            "summarization",
+            "Xenova/distilbart-cnn-6-6"
+          );
+
+          loadingModel = false;
+        }
+
+        aiOut.textContent = "Thinking with local AI…";
+        const description = buildDescription(summary);
+
+        const result = await summarizer(description, {
+          max_new_tokens: 120,
+        });
+
+        const text =
+          (Array.isArray(result) && result[0] && (result[0].summary_text || result[0].generated_text)) ||
+          "";
+        aiOut.textContent = text.trim() || "AI did not produce any text.";
+      } catch (err) {
+        console.error(err);
+        aiOut.textContent =
+          "Local AI failed or could not load in this browser. Try refreshing or using a desktop browser.";
+      }
+    });
+  }
+</script>
 </body>
 </html>
